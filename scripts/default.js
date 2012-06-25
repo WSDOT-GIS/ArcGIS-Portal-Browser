@@ -122,6 +122,11 @@
 			//console.debug(portal);
 			$("#searchBox, #searchButton").attr("disabled", null);
 			$("#searchButton").click(search);
+			$("#searchBox").keyup(function(eventObject) {
+				if (eventObject.keyCode === 13) {
+					search();
+				}
+			});
 		});
 	}
 	
