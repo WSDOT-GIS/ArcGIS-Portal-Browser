@@ -1,25 +1,33 @@
 dojo.require("esri.arcgis.Portal");
 
 var portal;
+/*
+ * --------------------------------------
+ * |			| Title		|			|	
+ * |  Image		| Snippet	|	[Add]	|
+ * |			|			|			|
+ * |-------------------------------------
+ */
 
 function createResultItem(portalItem) {
-	var resultItem, key, portalItem, value;
-	resultItem = $("<dl>");
-	for (key in portalItem) {
-		if (portalItem.hasOwnProperty(key)) {
-			value = portalItem[key];
-			if (value !== null & typeof(value) !== "undefined") {
-				$("<dt>").text(key).appendTo(resultItem);
-				if (key === "description") {
-					$("<dd>").html(value).appendTo(resultItem);
-				} else {
-					$("<dd>").text(value).appendTo(resultItem);
-				}
-			}
-		}
+	var output, thumbDiv, linksDiv, textDiv;
+	output = $("<section>").addClass("portal-item");
+	$("<h1>").text(portalItem.title).appendTo(output);
+	thumbDiv = $("<div>").addClass("thumb").appendTo(output);
+	if (portalItem.thumbnailUrl) {
+		$("<img>").attr({
+			src: portalItem.thumbnailUrl
+		}).appendTo(thumbDiv);
 	}
+	linksDiv = $("<div>").appendTo(thumbDiv);
 	
-	return resultItem;
+	$("<div><a href='#'>Add</a></div>").appendTo(linksDiv);
+	$("<div><a href='#'>Details</a></div>").appendTo(linksDiv);
+	textDiv = $("<div>").addClass("text").appendTo(output);
+	// $("<p>").html(portalItem.description).appendTo(output);
+	$("<p>").html(portalItem.snippet).appendTo(textDiv);
+	$("<p>").text(portalItem.type + " by " + portalItem.owner).appendTo(textDiv);
+	return output;
 }
 
 function createResultsDisplay(queryResults) {
@@ -46,7 +54,7 @@ function search() {
 	var searchText, qParams;
 	searchText = $("#searchBox").val();
 	qParams = {
-		q: searchText
+		q: searchText + " type:Service"
 	}
 	portal.queryItems(qParams).then(onQueryComplete);
 }

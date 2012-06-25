@@ -1,0 +1,18 @@
+.portal-item {
+	border: black solid 1px
+}
+
+.portal-item h1 {
+	font-size: 1.2em;
+	padding: 0.2em;
+	margin: 0.2em;
+}
+
+.thumb, .text {
+	display: table-cell;
+}
+
+.thumb img {
+	width: 200px;
+	height: 133px;
+}
