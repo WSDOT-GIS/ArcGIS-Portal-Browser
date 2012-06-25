@@ -15,10 +15,10 @@
 			portalItem: null
 		},
 		_create: function() {
-			var $this = this, portalItem = $this.options.portalItem, rootElem = $($this.element);
+			var $this = this, portalItem = $this.options.portalItem, rootElem = $($this.element), link;
 			if (portalItem !== null) {
 				rootElem.addClass("portal-item");
-				$("<h1>").text(portalItem.title).appendTo(rootElem);
+				rootElem.attr("title", portalItem.description);
 				thumbDiv = $("<div>").addClass("thumb").appendTo(rootElem);
 				if (portalItem.thumbnailUrl) {
 					$("<img>").attr({
@@ -27,9 +27,16 @@
 				}
 				linksDiv = $("<div>").appendTo(thumbDiv);
 				
-				$("<div><a href='#'>Add</a></div>").appendTo(linksDiv);
-				$("<div><a href='#'>Details</a></div>").appendTo(linksDiv);
+				link = $("<a href='#'>Add</a>");
+				$("<div>").appendTo(linksDiv).append(link);
+				
+				link = $("<a>").text("Details").attr({
+					href: portalItem.itemUrl,
+					target: "_blank"
+				});
+				$("<div>").appendTo(linksDiv).append(link);
 				textDiv = $("<div>").addClass("text").appendTo(rootElem);
+				$("<h1>").text(portalItem.title).appendTo(textDiv);
 				// $("<p>").html(portalItem.description).appendTo(rootElem);
 				$("<p>").html(portalItem.snippet).appendTo(textDiv);
 				$("<p>").text(portalItem.type + " by " + portalItem.owner).appendTo(textDiv);
@@ -52,20 +59,17 @@
 			queryResults: null
 		},
 		_create: function() {
-			var $this = this, container, i, l, queryResults = this.options.queryResults;
+			var $this = this, container, resultsList, i, l, queryResults = this.options.queryResults;
 			if (queryResults === null || typeof(queryResults) === "undefined"){
 				throw new Error("The queryResults option cannot be set to null or undefined.");
 			}
-			// container = $("<div>").attr({
-				// id: "queryResults"
-			// });
 			container = $this.element;
-			container.addClass("query-results");
+			resultsList = $("<div>").addClass("query-results").appendTo(container);
 			if (queryResults.results.length > 0) {
 				for (i = 0, l = queryResults.results.length; i < l; i += 1) {
 					$("<section>").portalItem({
 						portalItem: queryResults.results[i]
-					}).appendTo(container);
+					}).appendTo(resultsList);
 				}
 			} else {
 				container.text("No results found.");
@@ -101,7 +105,8 @@
 		var searchText, qParams;
 		searchText = $("#searchBox").val();
 		qParams = {
-			q: searchText + " type:Service"
+			num: 1000,
+			q: [searchText, "type:Service"].join(" ")
 		}
 		portal.queryItems(qParams).then(onQueryComplete);
 	}
