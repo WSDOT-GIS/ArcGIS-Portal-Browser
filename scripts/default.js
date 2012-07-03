@@ -15,7 +15,25 @@
 			portalItem: null
 		},
 		_create: function() {
-			var $this = this, portalItem = $this.options.portalItem, rootElem = $($this.element), link;
+			var $this = this, portalItem = $this.options.portalItem, rootElem = $($this.element), link, showDetails;
+			
+			showDetails = function(/*evt*/) {
+				/**
+				 * Shows the details of the portal item in a jQuery UI dialog.
+				 */
+				$("<div>").html(portalItem.description).dialog({
+					modal: true,
+					title: portalItem.title,
+					close: function(/*evt, data*/) {
+						/**
+						 * Destroys the dialog and removes the DOM element from the document.
+						 */
+						$(this).dialog("destroy").remove();
+					}
+				});
+				return false;
+			}
+			
 			if (portalItem !== null) {
 				rootElem.addClass("portal-item");
 				rootElem.attr("title", portalItem.description);
@@ -31,9 +49,10 @@
 				$("<div>").appendTo(linksDiv).append(link);
 				
 				link = $("<a>").text("Details").attr({
-					href: portalItem.itemUrl,
+					href: "#",
 					target: "_blank"
-				});
+				}).click(showDetails);
+				
 				$("<div>").appendTo(linksDiv).append(link);
 				textDiv = $("<div>").addClass("text").appendTo(rootElem);
 				$("<h1>").text(portalItem.title).appendTo(textDiv);
@@ -84,50 +103,114 @@
 		}
 	});
 	
-	function createResultItem(portalItem) {
-		return $("<section>").portalItem({
-			portalItem: portalItem
-		});
-	}
+	// function onQueryComplete(result) {
+		// $("#queryResults").remove();
+		// createResultsDisplay(result).appendTo("body");
+	// }
 	
-	function createResultsDisplay(queryResults) {
-		return $("<div id='queryResults'>").searchResultsPage({
-			queryResults: queryResults 
-		});
-	}
-	
-	function onQueryComplete(result) {
-		$("#queryResults").remove();
-		createResultsDisplay(result).appendTo("body");
-	}
-	
-	function search() {
-		var searchText, qParams;
-		searchText = $("#searchBox").val();
-		qParams = {
-			num: 1000,
-			q: [searchText, "type:Service"].join(" ")
+	$.widget("ui.portalSearch", {
+		options: {
+			portalUrl: "www.arcgis.com"
+		},
+		_portal: null,
+		_searchBox: null,
+		_queryResultsSection: null,
+		_search: function() {
+			var $this = this, searchText, qParams, portal;
+				function onQueryComplete(result) {
+					if ($this._queryResultsSection) {
+						$this._queryResultsSection.remove();
+					}
+					$this._queryResultsSection = $("<div>").searchResultsPage({
+						queryResults: result
+					}).appendTo($this.element);
+				}
+			searchText = $this._searchBox.val();
+			qParams = {
+				num: 1000,
+				q: [searchText, "type:Service"].join(" ")
+			}
+			portal = $this._portal;
+			portal.queryItems(qParams).then(onQueryComplete);
+		},
+		_create: function() {
+			var $this = this, root = $this.element;
+			
+			// Make sure the portal option was specified before proceeding any further.
+			if (!$this.options.portalUrl) {
+				throw new Error("No portal object was specified.");
+			} else {
+				// protocol will be either http: or https:.
+				$this._portal = esri.arcgis.Portal([window.location.protocol, $this.options.portalUrl].join("//"));
+			}
+			
+			// Add the search box.
+			$this._searchBox = $("<input>").attr({
+				type: "search",
+				disabled: true
+			}).appendTo(root);
+			
+			dojo.connect($this._portal, "onLoad", function() {
+				//console.debug(portal);
+				$this._searchBox.attr("disabled", null).keyup(function(eventObject) {
+					if (eventObject.keyCode === 13) {
+						$this._search();
+					}
+				});
+			});
+			
+			return this;
+		},
+		_setOption: function(key, value) {
+			$.Widget.prototype._setOption.apply(this, arguments);
+		},
+		destroy: function() {
+			
 		}
-		portal.queryItems(qParams).then(onQueryComplete);
-	}
+	});
+	
+	// function createResultItem(portalItem) {
+		// return $("<section>").portalItem({
+			// portalItem: portalItem
+		// });
+	// }
+// 	
+	// function createResultsDisplay(queryResults) {
+		// return $("<div id='queryResults'>").searchResultsPage({
+			// queryResults: queryResults 
+		// });
+	// }
+	
+	
+	// function search() {
+		// var searchText, qParams;
+		// searchText = $("#searchBox").val();
+		// qParams = {
+			// num: 1000,
+			// q: [searchText, "type:Service"].join(" ")
+		// }
+		// portal.queryItems(qParams).then(onQueryComplete);
+	// }
 	
 	function init(){
 		
-		// Get the protocol of this page
-		protocol = window.location.protocol; // http: or https:
+		$("<div>").appendTo("body").portalSearch();
 		
-		portal = esri.arcgis.Portal(protocol + "//www.arcgis.com");
-	
-		dojo.connect(portal, "onLoad", function() {
-			//console.debug(portal);
-			$("#searchBox, #searchButton").attr("disabled", null);
-			$("#searchButton").click(search);
-			$("#searchBox").keyup(function(eventObject) {
-				if (eventObject.keyCode === 13) {
-					search();
-				}
-			});
-		});
+		// // Get the protocol of this page
+		// protocol = window.location.protocol; // http: or https:
+
+		// portal = esri.arcgis.Portal(protocol + "//www.arcgis.com");
+
+		// dojo.connect(portal, "onLoad", function() {
+			// //console.debug(portal);
+			// $("#searchBox, #searchButton").attr("disabled", null);
+			// $("#searchButton").click(search);
+			// $("#searchBox").keyup(function(eventObject) {
+				// if (eventObject.keyCode === 13) {
+					// search();
+				// }
+			// });
+		// });
 	}
 	
 	dojo.ready(init);

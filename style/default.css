@@ -6,10 +6,11 @@
 }
 
 .portal-item {
-	border-width: 1px;
-	border-style: solid;
-	border-color: black;
-	display: table-row;
+	border-bottom-width: 0.1em;
+	border-bottom-style: solid;
+	border-bottom-color: #EBEBEB;
+	margin: 0.5em;
+	padding: 0.2em;
 }
 
 .portal-item h1 {
