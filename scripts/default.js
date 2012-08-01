@@ -1,7 +1,14 @@
 (function($){
+	dojo.require("esri.arcgis.Portal");
+	 
 	function init(){
 		
+		var portal = new esri.arcgis.Portal([window.location.protocol, "wa-geoservices.maps.arcgis.com"].join("//"));
+		
+		portal.signIn();
+		
 		$("<div>").appendTo("body").portalSearch({
+			portal: portal,
 			num: 10,
 			addLinkClick: function() {
 				console.debug(arguments);
