@@ -3,7 +3,7 @@
 	 
 	function init(){
 		
-		var portal = new esri.arcgis.Portal([window.location.protocol, "wa-geoservices.maps.arcgis.com"].join("//"));
+		var portal = new esri.arcgis.Portal([window.location.protocol, "wsdot.maps.arcgis.com"].join("//"));
 		
 		portal.signIn();
 		
